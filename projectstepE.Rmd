@@ -1,0 +1,53 @@
+---
+title: "projectstepE"
+output: html_document
+date: "2024-11-26"
+---
+
+```{Library loading}
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+```
+
+```{Data Loading}
+library(readr)
+sample1anon <- read_csv("C:/Users/ehngu/Downloads/sample1anon.csv")
+
+library(readr)
+sample2anon <- read_csv("C:/Users/ehngu/Downloads/sample2anon.csv")
+View(sample2anon)
+```
+
+
+```{Data Cleaning}
+sample1cleaned <- sample1anon %>% 
+  select(colnames(sample1anon)[8:582]) %>% 
+  filter(Q107 == 1)
+
+sample2cleaned <- sample2anon %>% 
+  select(colnames(sample2anon)[8:1152]) %>% 
+  filter(Q1 == 1)
+
+#These two lines of code subset and select columns that contain data that are of interest to this study in each wave and utilize the filter function from dplyr to only include participants who consented to the study 
+```
+
+```{Data Filtering}
+sample1controversial <- sample1cleaned %>% 
+  select("",colnames[573:575])
+```
+
+
+```{Data Analysis: Hypothesis 1}
+
+
+#
+```
+
+
+```{Visualization}
+ggplot()
+
+#To visualize how I compare averages across different disagreement factors, I will use a boxplot/bar graph to visualize the difference in averages and spread between two different groups on the same disagreement factor. Graphs will be restricted by topic, so for example, one graph will be demonstrating how two groups differ between disagreement factors across all controversial topics.
+```
+

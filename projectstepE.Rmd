@@ -8,46 +8,76 @@ date: "2024-11-26"
 library(dplyr)
 library(tidyverse)
 library(ggplot2)
+data("billboard")
+ex<-billboard %>%
+  pivot_longer(
+    cols = starts_with("wk"),
+    names_to = "week",
+    names_prefix = "wk",
+    values_to = "rank",
+    values_drop_na = TRUE
+  )
 ```
 
 ```{Data Loading}
 library(readr)
-sample1anon <- read_csv("C:/Users/ehngu/Downloads/sample1anon.csv")
+sample1anon <- read_csv("C:/Users/Ethan Nguyen/Downloads/sample1anon.csv")
 
-library(readr)
-sample2anon <- read_csv("C:/Users/ehngu/Downloads/sample2anon.csv")
-View(sample2anon)
 ```
 
 
-```{Data Cleaning}
+```{Basic Data Cleaning}
 sample1cleaned <- sample1anon %>% 
   select(colnames(sample1anon)[8:582]) %>% 
   filter(Q107 == 1)
 
-sample2cleaned <- sample2anon %>% 
-  select(colnames(sample2anon)[8:1152]) %>% 
-  filter(Q1 == 1)
-
-#These two lines of code subset and select columns that contain data that are of interest to this study in each wave and utilize the filter function from dplyr to only include participants who consented to the study 
+#This line of code subsets and select columns that contain data that are of interest to this study and utilizes the 'filter' function from dplyr to only include participants who consented to the study
 ```
 
-```{Data Filtering}
+```{Thorough Data Filtering and Coding}
 sample1controversial <- sample1cleaned %>% 
-  select("",colnames[573:575])
+  select(colnames(sample1cleaned)[9:14], colnames(sample1cleaned)[21:26], colnames(sample1cleaned)[33:38], colnames(sample1cleaned)[51:56], starts_with("Pair13"), starts_with("Pair18"), starts_with("Pair19"), starts_with("Pair26"), starts_with("Pair28"), starts_with("Pair29"), starts_with("Pair32"), starts_with("Pair33"), starts_with("Pair34"), starts_with("Pair43"), starts_with("Pair52"), starts_with("Pair53"), starts_with("Pair57"), starts_with("Pair58"), starts_with("Pair62"), starts_with("Pair63"), starts_with("Pair64"), starts_with("Pair66"), starts_with("Pair67"), starts_with("Pair70"), starts_with("Pair74"), starts_with("Pair76"), starts_with("Pair83"), starts_with("Pair86"), starts_with("Pair90"), starts_with("Pair91"), colnames(sample1cleaned)[573:575])
+
+#The code above creates a subsection of the data that includes all survey questions with controversial content
+
+sample1contlonger <- pivot_longer(sample1controversial, cols = starts_with("Pair"), names_to = c("pair", "dFactor"), names_sep = "_", values_to = "Rating")
+sample1contlonger <- na.omit(sample1contlonger)
+sample1contlonger$PI <- recode(sample1contlonger$PI, `0` = "Neither Liberal nor Conservative", `-1` = "Slightly Liberal", `-2` = "Liberal", `-3` = "Strongly Liberal", `1` = "Strongly Conservative", `2` = "Conservative", `3` = "Slightly Conservative")
+sample1contlonger$PI <- as.factor(sample1contlonger$PI)
+levels(sample1contlonger$PI)
+
+#The code above creates a subsection of the data fit for analysis having to deal with controversial topics, as it only contains responses to questions coded for controversial content and isolates each disagreement factor as an individual variable
+
+sample1longer <- pivot_longer(sample1cleaned, cols = starts_with("Pair"), names_to = c("pair", "dFactor"), names_sep = "_",  values_to = "Rating")
+sample1longer <- na.omit(sample1longer)
+sample1longer$PI <- recode(sample1longer$PI, `0` = "Neither Liberal nor Conservative", `-1` = "Slightly Liberal", `-2` = "Liberal", `-3` = "Strongly Liberal", `1` = "Strongly Conservative", `2` = "Conservative", `3` = "Slightly Conservative")
+
+#This line of code creates a much cleaner version of the dataset from Basic Data Cleaning that omits NA values, separates disagreement factor as an individual variable, and changes some factors into words that make more sense when graphed. 
+
+#I will need to subsection the data according to the specific domain of content to complete the rest of my analyses, which are discussed a bit more toward the bottom in terms of future plans. I also need to reorder the factors within political affiliation so that they make sense when graphed
 ```
 
 
 ```{Data Analysis: Hypothesis 1}
 
+controAOV <- aov(Rating ~ PI, data = sample1contlonger)
+TukeyHSD(controAOV)
+hyp1result <- TukeyHSD(controAOV)
 
-#
+#Hypothesis 1 shows some support, from the data. Strongly liberal individuals are more likely to rate disagreement factors as a probable cause for disagreement when compared to slightly liberal individuals, but do not statistically differ from Liberal individuals. Strongly conservative individuals are more likely to rate disagreement factors as a probable cause for disagreement when compared to slightly conservative individuals, but do not statistically differ from Conservative individuals. This finding verifies that there are some observable differences between the political parties in how likely they see disagreement occurring based on different reasons. Interestingly, individuals in the center of the political spectrum differ from Liberal and Slightly Conservative individuals the most, while also showing statistically significant differences from Strongly Liberal individuals.
 ```
 
 
 ```{Visualization}
-ggplot()
+#To visualize how I compare averages across different disagreement factors, I will use boxplots to visualize the difference in averages and spread between two different groups on the same disagreement factor. Graphs will be restricted by topic, so for example, one graph will be demonstrating how two groups differ between disagreement factors across all controversial topics.
 
-#To visualize how I compare averages across different disagreement factors, I will use a boxplot/bar graph to visualize the difference in averages and spread between two different groups on the same disagreement factor. Graphs will be restricted by topic, so for example, one graph will be demonstrating how two groups differ between disagreement factors across all controversial topics.
+ggplot(sample1contlonger, aes(Rating, PI)) + geom_boxplot() + theme_classic()
+ggplot(sample1contlonger, aes(Rating, dFactor)) + geom_boxplot() + theme_classic() + facet_wrap(~PI) + xlab("Agreement Rating") + ylab("Disagreement Factor")
+
+#The first graph above shows the spread of ratings (likert scale: 1 Strongly disagree, 7 = Strongly Agree) irrespective of factor across different political affiliations (Reverse coded based on likert scale answer, 1 = Strongly Liberal, 4= Neither Conservative or Liberal, 7 = Strongly conservative). The second graphs shows the spread of answers for individual disagreement factors within each political affiliation. 
+
+#Disagreement Factors, rated based on how likely they are to be a valid reason for disagreement: 1 = Perceived threat, 2 = The complexity of the topic, 3 = Moral reasons, 4 = Political reasons, 5 = Religious reasons, 6 = Perceived harm
+
+#Similar graphs will be constructed for other hypothesis as I will be conducting one more ANOVA and two t-tests to evaluate the rest of my hypotheses. One ANOVA will be comparing the average rating of items between each other within a given content domain with a non-directional hypothesis to test for similarity in responses within content domains. One t-test will compare the mean ratings of controversial items to non-controversial items, with a directional hypothesis that controversial items will have larger mean ratings. Another t-test will compare mean ratings between two directional groups, with a non-directional hypothesis. I will also need to find a way to translate the writing above into a key on the graph or condense it so that this markdown file is easier to follow/reproduce.
 ```
 

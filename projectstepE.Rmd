@@ -8,15 +8,6 @@ date: "2024-11-26"
 library(dplyr)
 library(tidyverse)
 library(ggplot2)
-data("billboard")
-ex<-billboard %>%
-  pivot_longer(
-    cols = starts_with("wk"),
-    names_to = "week",
-    names_prefix = "wk",
-    values_to = "rank",
-    values_drop_na = TRUE
-  )
 ```
 
 ```{Data Loading}

@@ -4,16 +4,19 @@ output: html_document
 date: "2024-11-26"
 ---
 
-```{Library loading}
+```{Library Loading}
 library(dplyr)
 library(tidyverse)
 library(ggplot2)
+library(lsr)
+library(jtools)
+library(effsize)
 ```
+
 
 ```{Data Loading}
 library(readr)
 sample1anon <- read_csv("C:/Users/Ethan Nguyen/Downloads/sample1anon.csv")
-
 ```
 
 
@@ -24,6 +27,7 @@ sample1cleaned <- sample1anon %>%
 
 #This line of code subsets and select columns that contain data that are of interest to this study and utilizes the 'filter' function from dplyr to only include participants who consented to the study
 ```
+
 
 ```{Thorough Data Filtering and Coding}
 sample1controversial <- sample1cleaned %>% 
@@ -37,7 +41,7 @@ sample1contlonger$PI <- recode(sample1contlonger$PI, `0` = "Neither Liberal nor 
 sample1contlonger$PI <- as.factor(sample1contlonger$PI)
 levels(sample1contlonger$PI)
 
-#The code above creates a subsection of the data fit for analysis having to deal with controversial topics, as it only contains responses to questions coded for controversial content and isolates each disagreement factor as an individual variable
+#The code above further cleans the subsection of the data having to deal with controversial topics so it is more fit for data analysis, as it only contains responses to questions coded for controversial content and isolates each disagreement factor as an individual variable
 
 sample1longer <- pivot_longer(sample1cleaned, cols = starts_with("Pair"), names_to = c("pair", "dFactor"), names_sep = "_",  values_to = "Rating")
 sample1longer <- na.omit(sample1longer)
@@ -45,30 +49,65 @@ sample1longer$PI <- recode(sample1longer$PI, `0` = "Neither Liberal nor Conserva
 
 #This line of code creates a much cleaner version of the dataset from Basic Data Cleaning that omits NA values, separates disagreement factor as an individual variable, and changes some factors into words that make more sense when graphed. 
 
+sample1longer$AgeGroup <- NA
+for (x in 1:nrow(sample1longer)) {
+  sample1longer$AgeGroup[x] <- sample1longer$Age[x] <= 40
+}
+sample1longer$AgeGroup[sample1longer$AgeGroup == TRUE] <- "Younger"
+sample1longer$AgeGroup[sample1longer$AgeGroup == FALSE] <- "Older"
+
+#The code above adds a column the long form version of the full dataset that indicates whether a response belongs to someone of a younger or older demographic, with the cutoff for younger demographics being 40 years old, as it is the oldest age that a Millennial could have possibly been at the time of this study. 
+
 #I will need to subsection the data according to the specific domain of content to complete the rest of my analyses, which are discussed a bit more toward the bottom in terms of future plans. I also need to reorder the factors within political affiliation so that they make sense when graphed
+
+sample1longer$Content <- NA
+#ifelse statements for coding content and contro
 ```
 
 
 ```{Data Analysis: Hypothesis 1}
-
 controAOV <- aov(Rating ~ PI, data = sample1contlonger)
+summary(controAOV)
 TukeyHSD(controAOV)
+etaSquared(controAOV)
 hyp1result <- TukeyHSD(controAOV)
 
-#Hypothesis 1 shows some support, from the data. Strongly liberal individuals are more likely to rate disagreement factors as a probable cause for disagreement when compared to slightly liberal individuals, but do not statistically differ from Liberal individuals. Strongly conservative individuals are more likely to rate disagreement factors as a probable cause for disagreement when compared to slightly conservative individuals, but do not statistically differ from Conservative individuals. This finding verifies that there are some observable differences between the political parties in how likely they see disagreement occurring based on different reasons. Interestingly, individuals in the center of the political spectrum differ from Liberal and Slightly Conservative individuals the most, while also showing statistically significant differences from Strongly Liberal individuals.
+#Hypothesis 1 shows some support, from the data. Strongly liberal individuals are more likely to rate disagreement factors as a probable cause for disagreement when compared to slightly liberal individuals, but do not statistically differ from Liberal individuals. Strongly conservative individuals are more likely to rate disagreement factors as a probable cause for disagreement when compared to slightly conservative individuals, but do not statistically differ from Conservative individuals. This finding verifies that there are some observable differences between political identifications in how likely they see disagreement occurring based on different reasons. Interestingly, individuals in the center of the political spectrum differ from Liberal and Slightly Conservative individuals the most, while also showing statistically significant differences from Strongly Liberal individuals. However, the partial eta-squared value for this ANOVA is 0.0161, meaning the effect size for political affiliation is small. 
 ```
 
 
-```{Visualization}
+```{Data Analysis: Hypothesis 2}
+
+```
+
+
+```{Data Analysis: Hypothesis 3}
+t.test(Rating ~ AgeGroup, data = sample1longer)
+hyp3result <- t.test(Rating ~ AgeGroup, data = sample1longer)
+cohen.d(Rating ~ AgeGroup, data = sample1longer)
+
+#Hypothesis 3 is supported by the data, the average disagreement rating in younger demographics is statistically significantly different than ratings by older demographics, t = -9.2046, p < 0.0001. However, the Cohen's d value for this calculation is 0.1367, meaning that the effect size of this result is extremely small. 
+```
+
+
+```{Visualization: Hypothesis 1}
 #To visualize how I compare averages across different disagreement factors, I will use boxplots to visualize the difference in averages and spread between two different groups on the same disagreement factor. Graphs will be restricted by topic, so for example, one graph will be demonstrating how two groups differ between disagreement factors across all controversial topics.
 
-ggplot(sample1contlonger, aes(Rating, PI)) + geom_boxplot() + theme_classic()
-ggplot(sample1contlonger, aes(Rating, dFactor)) + geom_boxplot() + theme_classic() + facet_wrap(~PI) + xlab("Agreement Rating") + ylab("Disagreement Factor")
+ggplot(sample1contlonger, aes(Rating)) + geom_bar() + theme_apa() + facet_wrap(~PI) + xlab("Disagreement Rating") + ylab("Number of Ratings")
 
-#The first graph above shows the spread of ratings (likert scale: 1 Strongly disagree, 7 = Strongly Agree) irrespective of factor across different political affiliations (Reverse coded based on likert scale answer, 1 = Strongly Liberal, 4= Neither Conservative or Liberal, 7 = Strongly conservative). The second graphs shows the spread of answers for individual disagreement factors within each political affiliation. 
+#This first graph above shows the spread of ratings (likert scale: 1 Strongly disagree, 7 = Strongly Agree) irrespective of factor across different political affiliations.
 
-#Disagreement Factors, rated based on how likely they are to be a valid reason for disagreement: 1 = Perceived threat, 2 = The complexity of the topic, 3 = Moral reasons, 4 = Political reasons, 5 = Religious reasons, 6 = Perceived harm
+ggplot(sample1contlonger, aes(Rating, fill = dFactor)) + geom_bar() + theme_apa() + facet_wrap(vars(PI)) + xlab("Disagreement Rating") + ylab("Disagreement Factor")
+
+#This second graphs shows the spread of answers for individual disagreement factors within each political affiliation. Disagreement Factors, rated based on how likely they are to be a valid reason for disagreement: 1 = Perceived threat, 2 = The complexity of the topic, 3 = Moral reasons, 4 = Political reasons, 5 = Religious reasons, 6 = Perceived harm
 
 #Similar graphs will be constructed for other hypothesis as I will be conducting one more ANOVA and two t-tests to evaluate the rest of my hypotheses. One ANOVA will be comparing the average rating of items between each other within a given content domain with a non-directional hypothesis to test for similarity in responses within content domains. One t-test will compare the mean ratings of controversial items to non-controversial items, with a directional hypothesis that controversial items will have larger mean ratings. Another t-test will compare mean ratings between two directional groups, with a non-directional hypothesis. I will also need to find a way to translate the writing above into a key on the graph or condense it so that this markdown file is easier to follow/reproduce.
+```
+
+
+```{Visualization: Hypothesis 3}
+ggplot(sample1longer, aes(Rating)) + geom_bar() + theme_apa() + facet_wrap(~AgeGroup) + xlab("Disagreement Rating") + ylab("Number of Ratings")
+
+#This graph displays the spread of ratings across both age groups, where we see both age groups demonstrating a bi-modal shape, but the younger age group shows a more pronounced second peak around the 5th, 6th, and 7th bins
 ```
 

@@ -58,10 +58,9 @@ sample1longer$AgeGroup[sample1longer$AgeGroup == FALSE] <- "Older"
 
 #The code above adds a column the long form version of the full dataset that indicates whether a response belongs to someone of a younger or older demographic, with the cutoff for younger demographics being 40 years old, as it is the oldest age that a Millennial could have possibly been at the time of this study. 
 
-#I will need to subsection the data according to the specific domain of content to complete the rest of my analyses, which are discussed a bit more toward the bottom in terms of future plans. I also need to reorder the factors within political affiliation so that they make sense when graphed
+sample1noncontro %>% remove()
 
-sample1longer$Content <- NA
-#ifelse statements for coding content and contro
+#ifelse statements for coding content and controversial status
 ```
 
 
@@ -77,7 +76,8 @@ hyp1result <- TukeyHSD(controAOV)
 
 
 ```{Data Analysis: Hypothesis 2}
-
+t.test(sample1longer$Rating, sample1contlonger$Rating)
+cohen.d(sample1longer$Rating, sample1contlonger$Rating)
 ```
 
 

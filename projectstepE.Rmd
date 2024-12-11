@@ -1,10 +1,10 @@
 ---
 title: "projectstepE"
 output: html_document
-date: "2024-11-26"
+date: "2024-12-10"
 ---
-
-```{Library Loading}
+# Libraries
+```{r}
 library(dplyr)
 library(tidyverse)
 library(ggplot2)
@@ -13,14 +13,16 @@ library(jtools)
 library(effsize)
 ```
 
+# Loading Data
+```{r}
+#Dataset can be through https://osf.io/p253v/ or https://doi.org/10.17605/OSF.IO/P253V
 
-```{Data Loading}
 library(readr)
 sample1anon <- read_csv("C:/Users/Ethan Nguyen/Downloads/sample1anon.csv")
 ```
 
-
-```{Basic Data Cleaning}
+# Basic Data Cleaning
+```{r}
 sample1cleaned <- sample1anon %>% 
   select(colnames(sample1anon)[8:582]) %>% 
   filter(Q107 == 1)
@@ -28,8 +30,8 @@ sample1cleaned <- sample1anon %>%
 #This line of code subsets and select columns that contain data that are of interest to this study and utilizes the 'filter' function from dplyr to only include participants who consented to the study
 ```
 
-
-```{Thorough Data Filtering and Coding}
+# Thorough Data Filtering and Coding
+```{r}
 sample1controversial <- sample1cleaned %>% 
   select(colnames(sample1cleaned)[9:14], colnames(sample1cleaned)[21:26], colnames(sample1cleaned)[33:38], colnames(sample1cleaned)[51:56], starts_with("Pair13"), starts_with("Pair18"), starts_with("Pair19"), starts_with("Pair26"), starts_with("Pair28"), starts_with("Pair29"), starts_with("Pair32"), starts_with("Pair33"), starts_with("Pair34"), starts_with("Pair43"), starts_with("Pair52"), starts_with("Pair53"), starts_with("Pair57"), starts_with("Pair58"), starts_with("Pair62"), starts_with("Pair63"), starts_with("Pair64"), starts_with("Pair66"), starts_with("Pair67"), starts_with("Pair70"), starts_with("Pair74"), starts_with("Pair76"), starts_with("Pair83"), starts_with("Pair86"), starts_with("Pair90"), starts_with("Pair91"), colnames(sample1cleaned)[573:575])
 
@@ -63,8 +65,8 @@ sample1noncontro <- subset(sample1longer, pair != "Pair13" & pair != "Pair2" & p
 #code above creates a subset of data to compare 
 ```
 
-
-```{Data Analysis: Hypothesis 1}
+# Data Analysis: Hypothesis 1
+```{r}
 #Hypothesis 1: More extreme political identification (ex: Strongly Liberal vs Slightly Liberal) will be associated with higher ratings across all disagreement factors in disagreement scenarios coded for controversial content or topics when compared to participants with less extreme political identifications. 
 
 controAOV <- aov(Rating ~ PI, data = sample1contlonger)
@@ -75,8 +77,8 @@ etaSquared(controAOV)
 #Hypothesis 1 shows some support, from the data. Strongly liberal individuals are more likely to rate disagreement factors as a probable cause for disagreement when compared to slightly liberal individuals, but do not statistically differ from Liberal individuals. Strongly conservative individuals are more likely to rate disagreement factors as a probable cause for disagreement when compared to slightly conservative individuals, but do not statistically differ from Conservative individuals. This finding verifies that there are some observable differences between political identifications in how likely they see disagreement occurring based on different reasons. Interestingly, individuals in the center of the political spectrum differ from Liberal and Slightly Conservative individuals the most, while also showing statistically significant differences from Strongly Liberal individuals. However, the partial eta-squared value for this ANOVA is 0.0161, meaning the effect size for political affiliation is small. 
 ```
 
-
-```{Data Analysis: Hypothesis 2}
+# Data Analysis: Hypothesis 2
+```{r}
 #Hypothesis 2: Controversial content across domains will have higher mean ratings across all disagreement factors when compared to uncontroversial content.
 
 t.test(sample1contlonger$Rating, sample1noncontro$Rating, alternative = "greater")
@@ -85,8 +87,8 @@ cohen.d(sample1contlonger$Rating, sample1noncontro$Rating, alternative = "greate
 #Hypothesis 2 is supported by the data, as the average endorsement of disagreement reasons for controversial topic is significantly greater when compared to non-controversial topics (t = 49.466 p < 0.0001). Effect size for this finding is medium according to a Cohen's d calculation (d = 0.666). This hypothesis generates an expected, but necessary to verify, point that participants find more reasons to disagree between controversial topics. 
 ```
 
-
-```{Data Analysis: Hypothesis 3}
+# Data Analysis: Hypothesis 3
+```{r}
 #Hypothesis 3: Younger age groups (ages 18-40) compared to older age groups (ages 41-75) will have lower averages across all items and all disagreement factors
 
 t.test(Rating ~ AgeGroup, data = sample1longer)
@@ -95,9 +97,9 @@ cohen.d(Rating ~ AgeGroup, data = sample1longer)
 #Hypothesis 3 is supported by the data, the average disagreement rating in younger demographics is statistically significantly different than ratings by older demographics, t = -9.2046, p < 0.0001. However, the Cohen's d value for this calculation is 0.1367, meaning that the effect size of this result is extremely small. 
 ```
 
-
-```{Visualization: Hypothesis 1}
-#To visualize how I compare averages across different disagreement factors, I will use bar graphs to visualize the difference in averages and spread between two different groups on the same disagreement factor. Graphs will be restricted by topic, so for example, one graph will be demonstrating how two groups differ between disagreement factors across all controversial topics.
+# Visualization: Hypothesis 1
+```{r}
+#To visualize how I compare averages across different disagreement factors, I will use bar graphs to visualize the difference in averages and spread between two different groups on the same disagreement factor.
 
 ggplot(sample1contlonger, aes(Rating)) + geom_bar() + theme_apa() + facet_wrap(~PI) + xlab("Disagreement Rating") + ylab("Number of Ratings")
 
@@ -108,8 +110,8 @@ ggplot(sample1contlonger, aes(Rating, fill = dFactor)) + geom_bar() + theme_apa(
 #This second graphs shows the spread of answers for individual disagreement factors within each political affiliation. Disagreement Factors, rated based on how likely they are to be a valid reason for disagreement: 1 = Perceived threat, 2 = The complexity of the topic, 3 = Moral reasons, 4 = Political reasons, 5 = Religious reasons, 6 = Perceived harm
 ```
 
-
-```{Visualization: Hypothesis 2}
+#Visualization: Hypothesis 2
+```{r}
 ggplot(sample1contlonger, aes(Rating)) + geom_bar() + theme_apa() + xlab("Disagreement Rating") + ylab("Number of Ratings")
 
 ggplot(sample1noncontro, aes(Rating)) + geom_bar() + theme_apa() + xlab("Disagreement Rating") + ylab("Number of Ratings")
@@ -117,8 +119,8 @@ ggplot(sample1noncontro, aes(Rating)) + geom_bar() + theme_apa() + xlab("Disagre
 #The two graphs above show the spread of ratings (likert scale: 1 Strongly disagree, 7 = Strongly Agree) for all itmes across controversial and non-controversial topics respectively. 
 ```
 
-
-```{Visualization: Hypothesis 3}
+# Visualization: Hypothesis 3
+```{r}
 ggplot(sample1longer, aes(Rating)) + geom_bar() + theme_apa() + facet_wrap(~AgeGroup) + xlab("Disagreement Rating") + ylab("Number of Ratings")
 
 #This graph displays the spread of ratings across both age groups, where we see both age groups demonstrating a bi-modal shape, but the younger age group shows a more pronounced second peak around the 5th, 6th, and 7th bins.

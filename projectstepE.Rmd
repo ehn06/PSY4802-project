@@ -43,13 +43,13 @@ sample1contlonger$PI <- recode(sample1contlonger$PI, `0` = "Neither Liberal nor 
 sample1contlonger$PI <- as.factor(sample1contlonger$PI)
 levels(sample1contlonger$PI)
 
-#The code above further cleans the subsection of the data having to deal with controversial topics so it is more fit for data analysis, as it only contains responses to questions coded for controversial content and isolates each disagreement factor as an individual variable
+#The code above further cleans the subsection of the data having to deal with controversial topics so it is more fit for data analysis, as it only contains responses to questions coded for controversial content and isolates each disagreement factor as an individual variable by turning the dataset into long format.
 
 sample1longer <- pivot_longer(sample1cleaned, cols = starts_with("Pair"), names_to = c("pair", "dFactor"), names_sep = "_",  values_to = "Rating")
 sample1longer <- na.omit(sample1longer)
 sample1longer$PI <- recode(sample1longer$PI, `0` = "Neither Liberal nor Conservative", `-1` = "Slightly Liberal", `-2` = "Liberal", `-3` = "Strongly Liberal", `1` = "Strongly Conservative", `2` = "Conservative", `3` = "Slightly Conservative")
 
-#This line of code creates a much cleaner version of the dataset from Basic Data Cleaning that omits NA values, separates disagreement factor as an individual variable, and changes some factors into words that make more sense when graphed. 
+#This line of code creates a much cleaner version of the dataset from Basic Data Cleaning that omits NA values, separates disagreement factor as an individual variable, and changes some factors into words that make more sense when graphed. This is achieved through turning the dataset into long format.
 
 sample1longer$AgeGroup <- NA
 for (x in 1:nrow(sample1longer)) {
@@ -62,7 +62,7 @@ sample1longer$AgeGroup[sample1longer$AgeGroup == FALSE] <- "Older"
 
 sample1noncontro <- subset(sample1longer, pair != "Pair13" & pair != "Pair2" & pair != "Pair4" & pair != "Pair6" & pair != "Pair9" & pair != "Pair18" & pair != "Pair19" & pair != "Pair26" & pair != "Pair28" & pair != "Pair29" & pair != "Pair32" & pair != "Pair33" & pair != "Pair34" & pair != "Pair43" & pair != "Pair52" & pair != "Pair53" & pair != "Pair57" & pair != "Pair58" & pair != "Pair62" & pair != "Pair63" & pair != "Pair64" & pair != "Pair66" & pair != "Pair67" & pair != "Pair70" & pair != "Pair74" & pair != "Pair76" & pair != "Pair83" & pair != "Pair86" & pair != "Pair90" & pair != "Pair91")
 
-#code above creates a subset of data to compare 
+#Code above creates a subset of data that only includes non-controversial content for stronger comparison between items pairings based on this metric. 
 ```
 
 # Data Analysis: Hypothesis 1
